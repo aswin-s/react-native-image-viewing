@@ -15,7 +15,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
-
+import FastImage from "react-native-fast-image";
 import useImageDimensions from "../../hooks/useImageDimensions";
 import usePanResponder from "../../hooks/usePanResponder";
 
@@ -34,16 +34,20 @@ type Props = {
   onRequestClose: () => void;
   onZoom: (isZoomed: boolean) => void;
   onLongPress: (image: ImageSource) => void;
+  onImageLoad: () => void;
   delayLongPress: number;
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
 };
+
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 const ImageItem = ({
   imageSrc,
   onZoom,
   onRequestClose,
   onLongPress,
+  onImageLoad,
   delayLongPress,
   swipeToCloseEnabled = true,
   doubleTapToZoomEnabled = true,
@@ -54,7 +58,10 @@ const ImageItem = ({
   const scrollValueY = new Animated.Value(0);
   const [isLoaded, setLoadEnd] = useState(false);
 
-  const onLoaded = useCallback(() => setLoadEnd(true), []);
+  const onLoaded = useCallback(() => {
+    setLoadEnd(true);
+    onImageLoad();
+  }, []);
   const onZoomPerformed = (isZoomed: boolean) => {
     onZoom(isZoomed);
     if (imageContainer?.current) {
@@ -127,11 +134,11 @@ const ImageItem = ({
         onScrollEndDrag,
       })}
     >
-      <Animated.Image
+      <AnimatedFastImage
         {...panHandlers}
         source={imageSrc}
         style={imageStylesWithOpacity}
-        onLoad={onLoaded}
+        onLoadEnd={onLoaded}
       />
       {(!isLoaded || !imageDimensions) && <ImageLoading />}
     </Animated.ScrollView>

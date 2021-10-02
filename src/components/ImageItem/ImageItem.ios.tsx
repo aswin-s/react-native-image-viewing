@@ -20,13 +20,13 @@ import {
   GestureResponderEvent,
 } from "react-native";
 
+import FastImage from "react-native-fast-image";
 import useDoubleTapToZoom from "../../hooks/useDoubleTapToZoom";
 import useImageDimensions from "../../hooks/useImageDimensions";
 
 import { getImageStyles, getImageTransform } from "../../utils";
 import { ImageSource } from "../../@types";
 import { ImageLoading } from "./ImageLoading";
-
 const SWIPE_CLOSE_OFFSET = 75;
 const SWIPE_CLOSE_VELOCITY = 1.55;
 const SCREEN = Dimensions.get("screen");
@@ -38,16 +38,20 @@ type Props = {
   onRequestClose: () => void;
   onZoom: (scaled: boolean) => void;
   onLongPress: (image: ImageSource) => void;
+  onImageLoad: () => void;
   delayLongPress: number;
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
 };
+
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 const ImageItem = ({
   imageSrc,
   onZoom,
   onRequestClose,
   onLongPress,
+  onImageLoad,
   delayLongPress,
   swipeToCloseEnabled = true,
   doubleTapToZoomEnabled = true,
@@ -113,6 +117,11 @@ const ImageItem = ({
     [imageSrc, onLongPress]
   );
 
+  const onLoad = useCallback(() => {
+    setLoaded(true);
+    onImageLoad?.();
+  }, []);
+
   return (
     <View>
       <ScrollView
@@ -137,10 +146,10 @@ const ImageItem = ({
           onLongPress={onLongPressHandler}
           delayLongPress={delayLongPress}
         >
-          <Animated.Image
+          <AnimatedFastImage
             source={imageSrc}
             style={imageStylesWithOpacity}
-            onLoad={() => setLoaded(true)}
+            onLoadEnd={onLoad}
           />
         </TouchableWithoutFeedback>
       </ScrollView>
