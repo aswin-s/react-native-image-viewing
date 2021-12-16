@@ -6,17 +6,25 @@
  *
  */
 
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 
 const useRequestClose = (onRequestClose: () => void) => {
   const [opacity, setOpacity] = useState(1);
+  let timeout:number;
+
+  useEffect(()=>{
+    if(timeout){
+      clearTimeout(timeout)
+    }
+  },[])
 
   return [
     opacity,
     () => {
       setOpacity(0);
       onRequestClose();
-      setTimeout(() => setOpacity(1), 0);
+      timeout = setTimeout(() => setOpacity(1), 0);
     },
   ] as const;
 };
